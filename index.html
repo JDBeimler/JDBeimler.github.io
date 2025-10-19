@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Home</title>
+    <meta name="description" content="Personal website of Joel Beimler" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [
+            ["$", "$"],
+            ["\\(", "\\)"],
+          ],
+        },
+      };
+    </script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <a class="brand" href="index.html">Joël Beimler</a>
+        <nav class="nav">
+          <a href="research.html">Research</a>
+          <a href="papers.html">Papers</a>
+          <a href="misc.html">Misc</a>
+        </nav>
+      </div>
+    </header>
+    <main class="container">
+      <section class="hero">
+        <h1>Hello! This is Joël Beimler's website.</h1>
+        <p>
+          I am a mathematician interested in symplectic geometry. More
+          specifically, I care about Fukaya categories of Weinstein manifolds,
+          Legendrian handlebody calculus, and mirror symmetry.
+        </p>
+        <p></p>
+      </section>
+      <section>
+        <h2>News</h2>
+        <ul>
+          <li><em>Oct 2025</em>: Website launched.</li>
+        </ul>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="container">
+        <p>&copy; <span id="year"></span> Joël Beimler • HTML + MathJax</p>
+      </div>
+    </footer>
+    <script src="js/main.js"></script>
+  </body>
+</html>

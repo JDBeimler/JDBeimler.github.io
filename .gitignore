@@ -1,0 +1,15 @@
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Builds / caches (if you add tooling later)
+node_modules
+dist
+.cache
+*.log
