@@ -1,48 +1,55 @@
-
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Papers</title>
-  <meta name="description" content="Personal website of a mathematician" />
-  <link rel="stylesheet" href="css/styles.css" />
-  <script>
-    window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
-  </script>
-  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-</head>
-<body>
-  <header class="site-header">
-    <div class="container">
-      <a class="brand" href="index.html">Your Name</a>
-      <nav class="nav">
-        <a href="research.html">Research</a>
-        <a href="papers.html">Papers</a>
-        <a href="misc.html">Misc</a>
-      </nav>
-    </div>
-  </header>
-  <main class="container">
-
-<h1>Papers</h1>
-<p>List preprints and publications. Example:</p>
-<ol class="paper-list">
-  <li>
-    <strong>Title of Your Paper</strong><br/>
-    with A. Coauthor — <em>Journal / arXiv:1234.5678</em> (2025)
-    <div class="paper-links">
-      <a href="#">PDF</a> • <a href="#">arXiv</a> • <a href="#">BibTeX</a>
-    </div>
-  </li>
-</ol>
-
-  </main>
-  <footer class="site-footer">
-    <div class="container">
-      <p>&copy; <span id="year"></span> Your Name • Built with plain HTML + MathJax</p>
-    </div>
-  </footer>
-  <script src="js/main.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Papers</title>
+    <meta name="description" content="Personal website of Joel Beimler" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [
+            ["$", "$"],
+            ["\\(", "\\)"],
+          ],
+        },
+      };
+    </script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <a class="brand" href="index.html">Joël Beimler</a>
+        <nav class="nav">
+          <a href="research.html">Research</a>
+          <a href="papers.html">Papers</a>
+          <a href="misc.html">Misc</a>
+        </nav>
+      </div>
+    </header>
+    <main class="container">
+      <h1>Papers</h1>
+      <p>List preprints and publications. Example:</p>
+      <ol class="paper-list">
+        <li>
+          <strong>Title of Your Paper</strong><br />
+          with A. Coauthor — <em>Journal / arXiv:1234.5678</em> (2025)
+          <div class="paper-links">
+            <a href="#">PDF</a> • <a href="#">arXiv</a> • <a href="#">BibTeX</a>
+          </div>
+        </li>
+      </ol>
+    </main>
+    <footer class="site-footer">
+      <div class="container">
+        <p>&copy; <span id="year"></span> Joël Beimler • HTML + MathJax</p>
+      </div>
+    </footer>
+    <script src="js/main.js"></script>
+  </body>
 </html>
