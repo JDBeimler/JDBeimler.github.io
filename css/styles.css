@@ -39,6 +39,19 @@ a:hover {
   max-width: 880px;
   margin: 0 auto;
   padding: 0 1rem;
+  
+}
+
+.image-container {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.container img {
+  max-width: 300px;
+  height: auto;
+  flex-shrink: 0;
 }
 .site-header {
   position: sticky;
