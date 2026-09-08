@@ -30,7 +30,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 
 REPO = 'https://github.com/ViveLeFrance/AffineHandlebodies'
 #: the release the site is built from; move it deliberately
-PIN = 'v0.2.0'
+PIN = 'v0.2.1'
 
 #: Pinned, because the build is only as good as the versions behind it: this
 #: release carries sympy 1.13.3 and numpy 2.2.5, which the package's examples

@@ -1,4 +1,4 @@
 built 2026-09-08
-from  https://github.com/ViveLeFrance/AffineHandlebodies@v0.2.0
+from  https://github.com/ViveLeFrance/AffineHandlebodies@v0.2.1
 pyodide https://cdn.jsdelivr.net/pyodide/v0.28.3/full/
 modules __init__.py algebra.py compute.py continuation.py fibration.py paths.py runner.py singular.py study.py web.py
