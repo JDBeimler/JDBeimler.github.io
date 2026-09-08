@@ -29,7 +29,20 @@ button{margin-top:.9rem;padding:.5rem 1.1rem;border:0;border-radius:6px;
        background:var(--accent);color:#fff;font-size:.92rem;font-weight:600;cursor:pointer}
 button:disabled{background:#9bb8cf;cursor:default}
 .hint{color:var(--muted);font-size:.82rem;margin:.5rem 0 0}
-.facts{display:flex;flex-wrap:wrap;gap:.4rem .5rem;margin:.9rem 0}
+.facts{display:flex;flex-wrap:wrap;gap:.4rem .5rem;margin:.9rem 0;align-items:center}
+.facts .lead{font-weight:600}
+.trees{margin:.2rem 0 1rem}
+.trees summary{cursor:pointer;color:var(--muted);font-size:.85rem}
+.trees summary:hover{color:var(--fg)}
+.treegrid{display:flex;flex-wrap:wrap;gap:.5rem;margin:.6rem 0 0}
+.treegrid svg{border:1px solid var(--line);border-radius:6px;background:#fff}
+.treegrid line{stroke:var(--accent);stroke-width:1.6;stroke-linecap:round}
+.treegrid circle{fill:var(--accent)}
+.stat{grid-column:2;font-size:.85rem;color:var(--muted);min-height:1.15em}
+.stat.good{color:var(--good)}
+.stat.bad{color:var(--bad)}
+.stat code{font-size:.9em;background:#fff;border:1px solid var(--line);
+           border-radius:4px;padding:0 .25rem}
 .chip{border:1px solid var(--line);border-radius:999px;padding:.15rem .7rem;
       font-size:.85rem;background:#fff}
 .chip b{font-weight:600}
@@ -109,8 +122,8 @@ details.sec fieldset{border:0;background:var(--panel);padding:.9rem 1rem}
 </style>
 <main>
 <h1>Lefschetz bifibrations</h1>
-<p class="sub">Enter a surface and a fibration &pi;; then a fibration &rho; on its
-fibres. Every plot pans and zooms.</p>
+<p class="sub">Enter an equation for an affine surface and a <strong>linear</strong> fibration &pi;; then a linear fibration &rho; on its
+  fibres.</p>
 
 <details class="sec" id="secpi" open>
 <summary>Surface and &pi;</summary>
@@ -118,13 +131,16 @@ fibres. Every plot pans and zooms.</p>
 <form id="fpi">
 <fieldset>
   <div class="row">
-    <label for="domain">Surface X</label><input id="domain" spellcheck="false">
+    <label for="domain">Surface X</label><input id="domain" spellcheck="false" value="x*y*z - x - y + 1"
+           placeholder="x*y*z - x - y + 1">
+    <div id="surfstat" class="stat"></div>
     <label>Parameters</label>
     <div><div id="params"></div>
       <button type="button" class="add" id="addparam">+ parameter</button></div>
-    <label for="pi">&pi;</label><input id="pi" spellcheck="false">
-    <label for="pisolve">eliminate</label><input id="pisolve" spellcheck="false" placeholder="z">
-    <label for="piorigin">origin of &pi;</label><input id="piorigin" spellcheck="false" placeholder="0">
+    <label for="pi">&pi;</label><input id="pi" spellcheck="false" value="2*x + y - z"
+           placeholder="2*x + y - z">
+    <label for="pisolve">eliminate</label><input id="pisolve" spellcheck="false" value="x" placeholder="x">
+    <label for="piorigin">origin of &pi;</label><input id="piorigin" spellcheck="false" value="0" placeholder="0">
   </div>
   <button type="submit" id="bpi">Compute &pi;</button>
   <p class="hint">Write powers as <code>**</code>, the imaginary unit as <code>I</code>.
@@ -142,9 +158,10 @@ fibres. Every plot pans and zooms.</p>
 <form id="frho">
 <fieldset>
   <div class="row">
-    <label for="rho">&rho;</label><input id="rho" spellcheck="false">
-    <label for="rhosolve">eliminate</label><input id="rhosolve" spellcheck="false">
-    <label for="rhoorigin">origin of &rho;</label><input id="rhoorigin" spellcheck="false" placeholder="0">
+    <label for="rho">&rho;</label><input id="rho" spellcheck="false" value="z - 3*y"
+           placeholder="z - 3*y">
+    <label for="rhosolve">eliminate</label><input id="rhosolve" spellcheck="false" value="y" placeholder="y">
+    <label for="rhoorigin">origin of &rho;</label><input id="rhoorigin" spellcheck="false" value="0" placeholder="0">
   </div>
   <button type="submit" id="brho">Compute &rho;</button>
   <p class="hint" id="rhohint"></p>
@@ -247,6 +264,40 @@ function spec(withRho){
   return s;
 }
 
+// The surface stands on its own, so it is checked as soon as it has been
+// written rather than waiting for the button: a typo in the equation, or a
+// genuinely singular surface, is worth knowing before choosing a pi for it.
+let surfaceAsked = null;
+async function checkSurface(){
+  const asked = {domain: $('domain').value.trim(), params: readParams()};
+  const key = JSON.stringify(asked);
+  const box = $('surfstat');
+  if (!asked.domain){ box.className = 'stat'; box.textContent = '';
+                      surfaceAsked = null; return; }
+  if (key === surfaceAsked) return;
+  surfaceAsked = key;
+  box.className = 'stat'; box.textContent = 'checking\u2026';
+  try {
+    const r = await api('/api/surface', {method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(asked)}).then(x => x.json());
+    if (key !== surfaceAsked) return;          // a later edit has overtaken it
+    if (!r.ok){ box.className = 'stat bad'; box.textContent = r.error; return; }
+    box.className = 'stat ' + (r.smooth ? 'good' : 'bad');
+    if (r.smooth)
+      box.textContent = '\u2713 smooth';
+    else if (!r.listed)
+      box.textContent = '\u2717 singular along a curve, not at isolated points';
+    else
+      box.innerHTML = '\u2717 singular at ' + esc(r.variables) + ' = '
+        + r.singularities.map(q => `<code>${esc(q)}</code>`).join(', ');
+  } catch (e){
+    if (key !== surfaceAsked) return;
+    surfaceAsked = null;                       // let the same surface be retried
+    box.className = 'stat bad'; box.textContent = e.message;
+  }
+}
+
 let usePreset = false;   // true only for the automatic first run
 function touched(){ usePreset = false; }
 
@@ -312,6 +363,16 @@ function withOpeningView(fig, div){
   return {data: fig.data, layout};
 }
 
+// There is nothing on these plots to select: no data points to gather, and a
+// path's corners are picked by clicking them directly.  So the box and lasso
+// come off the bar rather than being left there to be tried.
+// The cloud button posts the figure to a third party, which is not what a page
+// that computes in front of you should offer; plotly has called it both names
+// across versions, and removing one that is not there costs nothing.
+const PLOT_CONFIG = {displaylogo: false, responsive: true,
+                     modeBarButtonsToRemove: ['select2d', 'lasso2d',
+                                              'sendChartToCloud', 'sendDataToCloud']};
+
 function plot(host, figure, caption){
   const wrap = document.createElement('div'); wrap.className = 'fig';
   const div = document.createElement('div'); wrap.appendChild(div);
@@ -320,7 +381,7 @@ function plot(host, figure, caption){
   host.appendChild(wrap);
   const shown = withOpeningView(figure, div);
   Plotly.newPlot(div, shown.data, shown.layout,
-                 {displaylogo:false, responsive:true});
+                 PLOT_CONFIG);
   return div;
 }
 
@@ -418,9 +479,84 @@ function showResult(host, figure, caption, perm, based){
   return div;
 }
 
-function chips(items){
-  return '<div class="facts">' + items.map(([k,v,bad]) =>
+function chips(items, lead){
+  return '<div class="facts">'
+    + (lead ? `<b class="lead">${esc(lead)}</b>` : '')
+    + items.map(([k,v,bad]) =>
     `<span class="chip${bad?' warn':''}">${esc(k)} <b>${esc(v)}</b></span>`).join('') + '</div>';
+}
+
+// A tree drawn the obvious way: rooted at its centre, depth downwards, and
+// leaves given consecutive slots so a parent sits over its children.
+function treeSvg(edges, n){
+  const adj = Array.from({length: n}, () => []);
+  for (const [a, b] of edges){ adj[a].push(b); adj[b].push(a); }
+  const deg = adj.map(a => a.length);
+  const gone = new Set();
+  let left = n, layer = [...Array(n).keys()].filter(v => deg[v] <= 1);
+  while (left > 2){
+    const next = [];
+    for (const v of layer){
+      gone.add(v); left--;
+      for (const w of adj[v]) if (!gone.has(w) && --deg[w] === 1) next.push(w);
+    }
+    layer = next;
+  }
+  const root = [...Array(n).keys()].find(v => !gone.has(v)) || 0;
+
+  const depth = new Array(n).fill(0), parent = new Array(n).fill(-1);
+  const seen = new Array(n).fill(false), order = [root];
+  seen[root] = true;
+  for (let i = 0; i < order.length; i++){
+    const v = order[i];
+    for (const w of adj[v]) if (!seen[w]){
+      seen[w] = true; parent[w] = v; depth[w] = depth[v] + 1; order.push(w);
+    }
+  }
+  // leaves take consecutive slots in depth-first order; a parent sits at the
+  // midpoint of its children
+  const x = new Array(n).fill(0);
+  let slot = 0;
+  (function walk(v){
+    const kids = adj[v].filter(w => w !== parent[v]);
+    if (!kids.length){ x[v] = slot++; return; }
+    kids.forEach(walk);
+    x[v] = (x[kids[0]] + x[kids[kids.length - 1]]) / 2;
+  })(root);
+
+  const step = 24, pad = 11;
+  const w = Math.max(...x) * step + 2 * pad, h = Math.max(...depth) * step + 2 * pad;
+  const px = v => (pad + x[v] * step).toFixed(1);
+  const py = v => (pad + depth[v] * step).toFixed(1);
+  return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">`
+    + edges.map(([a, b]) =>
+        `<line x1="${px(a)}" y1="${py(a)}" x2="${px(b)}" y2="${py(b)}"/>`).join('')
+    + [...Array(n).keys()].map(v =>
+        `<circle cx="${px(v)}" cy="${py(v)}" r="3.4"/>`).join('')
+    + '</svg>';
+}
+
+function plumbingTrees(pl){
+  if (!pl) return '';
+  const n = pl.vertices, k = pl.trees.length;
+  if (!k)
+    return '<details class="trees"><summary>plumbing trees</summary>'
+      + '<p class="hint">No tree of cylinders gives this fibre. Genus zero'
+      + ' needs a graph with a cycle, and the disc is not a plumbing at all.'
+      + '</p></details>';
+  const head = pl.listed ? (k === 1 ? 'one plumbing tree' : k + ' plumbing trees')
+                         : k + ' plumbing trees, and more';
+  const note = pl.listed
+    ? `Plumbing ${n} cylinders along any of these gives this fibre. A skeleton
+       is a choice, not an invariant, so where there is more than one they all
+       present the same surface.`
+    : `Plumbing ${n} cylinders along any of these gives this fibre. There are
+       more trees on ${n} vertices than are worth enumerating, so these are
+       examples rather than the whole list.`;
+  return '<details class="trees">'
+    + `<summary>${head}</summary><p class="hint">${note}</p>`
+    + '<div class="treegrid">'
+    + pl.trees.map(e => treeSvg(e, n)).join('') + '</div></details>';
 }
 
 function showError(host, msg){
@@ -443,13 +579,19 @@ function renderPi(r){
   const host = $('piout');
   if (r.pi && r.pi.error) { showError(host, r.pi.error); return false; }
   const p = r.pi;
+  // What belongs to pi stays above its equation; what belongs to the fibre
+  // goes below, where the equation of the fibre has just been written out.
+  // The surface's own smoothness is not here at all: it is answered under the
+  // field that defines it, which is where the question is asked.
   host.innerHTML =
     chips([['critical values', p.n_values],
-           ['critical points', p.n_points, p.n_points !== p.n_values],
-           ['punctures', p.punctures],
-           ['ranks at infinity', '[' + p.ranks.join(', ') + ']'],
-           ['smooth', r.smooth === null ? '?' : (r.smooth ? 'yes' : 'no'), r.smooth === false]])
-    + `<div class="tex">$$${p.tex}$$</div>`;
+           ['critical points', p.n_points, p.n_points !== p.n_values]])
+    + `<div class="tex">$$${p.tex}$$</div>`
+    + chips([['smooth', p.fibre_smooth ? 'yes' : 'no', !p.fibre_smooth],
+             ['genus', p.genus],
+             ['punctures', p.punctures],
+             ['ranks at infinity', '[' + p.ranks.join(', ') + ']']], 'Fibre:')
+    + plumbingTrees(p.plumbings);
   typeset(host);
   plot(host, p.figure, 'Critical values of pi, with the reference fibre in green.');
   LAST.pi = {values: p.values, origin: p.origin_xy};
@@ -542,6 +684,12 @@ $('frho').addEventListener('submit', async ev => {
   } catch (e) { showError($('rhoout'), e.message); }
   finally { $('brho').disabled = false; $('rhobusy').classList.add('hidden'); }
 });
+
+$('domain').addEventListener('blur', checkSurface);
+$('params').addEventListener('focusout', checkSurface);
+// The built page installs its back end in a script after this one, so the
+// opening check waits for the document rather than racing it.
+window.addEventListener('load', checkSurface);
 
 $('addparam').addEventListener('click', () => { addParam(); touched(); });
 
@@ -848,14 +996,14 @@ function addPicker(host, v, marks, origin, level, opts){
     {data: editorTraces(wp, marks, origin),
      layout: Object.assign({meta: {equalScale: true}}, EDITOR_LAYOUT)}, gd);
   Plotly.newPlot(gd, edFig.data, edFig.layout,
-                 {displaylogo: false, responsive: true});
+                 PLOT_CONFIG);
   const out = $(`out-${key}`);
   if (free)
     out.innerHTML = '<p class="blank">Draw a path, then press Compute.</p>';
   else {
     const shown = withOpeningView(untitled(v.figure), out);
     Plotly.newPlot(out, shown.data, shown.layout,
-                   {displaylogo: false, responsive: true});
+                   PLOT_CONFIG);
     out.insertAdjacentHTML('beforeend', permTable(v.monodromy));
   }
 
