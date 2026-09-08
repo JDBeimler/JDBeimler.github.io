@@ -13,3 +13,4 @@ node_modules
 dist
 .cache
 *.log
+__pycache__/
