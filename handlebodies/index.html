@@ -1,0 +1,1079 @@
+<!doctype html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lefschetz bifibrations</title>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@4.0.0/plotly.min.js"></script>
+<script>window.MathJax={tex:{inlineMath:[["$","$"]],displayMath:[["$$","$$"]]},svg:{fontCache:"global"},startup:{typeset:false,pageReady:()=>MathJax.startup.defaultPageReady().then(()=>window.flushTex&&window.flushTex())}};</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<style>
+:root{--fg:#1a1a1a;--muted:#6a6a6a;--line:#e3e3e3;--bg:#fff;--panel:#fafafa;
+      --accent:#1f77b4;--bad:#c0392b;--good:#2ca02c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:15px/1.55 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+main{max-width:1080px;margin:0 auto;padding:1.5rem 1.25rem 6rem}
+h1{font-size:1.5rem;margin:0 0 .2rem}
+h2{font-size:1.05rem;margin:2rem 0 .6rem;padding-bottom:.3rem;
+   border-bottom:1px solid var(--line)}
+p.sub{color:var(--muted);margin:0 0 1.5rem;font-size:.92rem}
+fieldset{border:1px solid var(--line);border-radius:8px;background:var(--panel);
+         padding:1rem 1.1rem;margin:0 0 1rem}
+legend{padding:0 .4rem;color:var(--muted);font-size:.85rem;font-weight:600;
+       letter-spacing:.02em}
+.row{display:grid;grid-template-columns:minmax(120px,auto) 1fr;gap:.55rem .9rem;
+     align-items:center}
+label{color:var(--muted);font-size:.9rem}
+input{width:100%;padding:.4rem .55rem;border:1px solid #ccc;border-radius:5px;
+      font:13.5px ui-monospace,SFMono-Regular,Menlo,monospace;background:#fff;color:var(--fg)}
+input:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+button{margin-top:.9rem;padding:.5rem 1.1rem;border:0;border-radius:6px;
+       background:var(--accent);color:#fff;font-size:.92rem;font-weight:600;cursor:pointer}
+button:disabled{background:#9bb8cf;cursor:default}
+.hint{color:var(--muted);font-size:.82rem;margin:.5rem 0 0}
+.facts{display:flex;flex-wrap:wrap;gap:.4rem .5rem;margin:.9rem 0}
+.chip{border:1px solid var(--line);border-radius:999px;padding:.15rem .7rem;
+      font-size:.85rem;background:#fff}
+.chip b{font-weight:600}
+.chip.warn{border-color:var(--bad);color:var(--bad)}
+.eq{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86rem;
+    color:#333;background:#fff;border:1px solid var(--line);border-radius:6px;
+    padding:.5rem .7rem;margin:.5rem 0;overflow-x:auto;white-space:pre}
+.err{border-left:3px solid var(--bad);background:#fdf3f2;padding:.6rem .9rem;
+     color:#7d2820;font-size:.9rem;margin:.8rem 0;white-space:pre-wrap}
+.fig{margin:.5rem 0 1.3rem}
+.cap{color:var(--muted);font-size:.85rem;margin:.1rem 0 0}
+.hidden{display:none}
+.picker{display:grid;grid-template-columns:0.82fr 1.18fr;gap:1rem;align-items:start;
+        border:1px solid var(--line);border-radius:8px;padding:.8rem;margin:1rem 0}
+@media (max-width:900px){.picker{grid-template-columns:1fr}}
+.picker h3{font-size:.95rem;margin:0 0 .4rem;color:var(--fg)}
+.tools{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-top:.5rem}
+.tools label{font-size:.82rem}
+.tools input[type=checkbox]{width:auto;vertical-align:middle;margin-right:.2rem}
+.flag{margin:.9rem 0 0;font-size:.9rem}
+.flag label{color:var(--fg);font-weight:600}
+.flag input{width:auto;vertical-align:middle;margin-right:.35rem}
+.flag .note{display:block;color:var(--muted);font-size:.82rem;font-weight:400;
+            margin-top:.2rem;max-width:60ch}
+.flag label.sub{display:inline-block;margin-top:.5rem;font-weight:400;
+                color:var(--fg)}
+.flag .opt.off{opacity:.45}
+.flag .opt.off label{cursor:default}
+.tools input[type=number]{width:4.5rem;padding:.25rem .35rem}
+.tools input[type=range]{width:7rem;vertical-align:middle}
+.tools button{margin:0;padding:.32rem .8rem;font-size:.85rem}
+.tools button.ghost{background:#fff;color:var(--accent);border:1px solid #bcd4e6}
+.keys{color:var(--muted);font-size:.78rem;margin:.45rem 0 0}
+.corner{display:none;align-items:center;gap:.4rem}
+.corner.on{display:flex}
+.selnote{color:var(--accent);font-size:.8rem;font-weight:600}
+button.add{margin:.15rem 0 0;padding:.22rem .6rem;background:#fff;color:var(--accent);
+  border:1px solid #bcd4e6;font-size:.82rem;font-weight:600}
+button.del{margin:0;padding:.1rem .45rem;background:#fff;color:var(--muted);
+  border:1px solid #ddd;font-size:.9rem;line-height:1.1}
+.prow{display:flex;gap:.4rem;margin-bottom:.35rem;align-items:center}
+.prow input.k{flex:0 0 7rem}
+.prow input.v{flex:1}
+.tex{background:#fff;border:1px solid var(--line);border-radius:6px;
+     padding:.7rem .9rem;margin:.6rem 0;overflow-x:auto}
+.busy{color:var(--muted);font-size:.9rem;margin:.6rem 0}
+details.sec{border:1px solid var(--line);border-radius:10px;background:#fff;
+            margin:0 0 .9rem}
+details.sec>summary{cursor:pointer;list-style:none;padding:.7rem 1rem;
+  font-size:1.02rem;font-weight:600;display:flex;align-items:center;gap:.5rem;
+  border-radius:10px}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::before{content:'\25b8';color:var(--muted);font-size:.85rem;
+  display:inline-block;transition:transform .12s}
+details.sec[open]>summary::before{transform:rotate(90deg)}
+details.sec>summary:hover{background:var(--panel)}
+details.sec>summary .why{margin-left:auto;color:var(--muted);font-size:.82rem;
+  font-weight:400}
+details.sec>.inner{padding:0 1rem 1rem}
+details.sec>.inner>h2:first-child{margin-top:.4rem}
+details.sec.locked>summary{color:var(--muted);cursor:default}
+details.sec.locked>summary:hover{background:none}
+details.sec.locked>.inner{display:none}
+details.sec fieldset{border:0;background:var(--panel);padding:.9rem 1rem}
+.blank{color:var(--muted);font-size:.88rem;border:1px dashed var(--line);
+       border-radius:6px;padding:1.1rem .9rem;text-align:center}
+.perm{overflow-x:auto;margin:.35rem 0 0}
+.perm table{border-collapse:collapse}
+.perm th{text-align:right;padding:.15rem .5rem .15rem 0;color:var(--muted);
+         font-size:.78rem;font-weight:600;white-space:nowrap}
+.perm td{border:1px solid var(--line);padding:.12rem .4rem;text-align:center;
+         min-width:1.7rem;font:12.5px ui-monospace,SFMono-Regular,Menlo,monospace}
+.perm tr+tr td{background:var(--panel)}
+.cyc{color:var(--muted);font-size:.82rem;margin:.35rem 0 0}
+.cyc b{color:var(--fg);font-weight:600;
+       font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+</style>
+<main>
+<h1>Lefschetz bifibrations</h1>
+<p class="sub">Enter a surface and a fibration &pi;; then a fibration &rho; on its
+fibres. Every plot pans and zooms.</p>
+
+<details class="sec" id="secpi" open>
+<summary>Surface and &pi;</summary>
+<div class="inner">
+<form id="fpi">
+<fieldset>
+  <div class="row">
+    <label for="domain">Surface X</label><input id="domain" spellcheck="false">
+    <label>Parameters</label>
+    <div><div id="params"></div>
+      <button type="button" class="add" id="addparam">+ parameter</button></div>
+    <label for="pi">&pi;</label><input id="pi" spellcheck="false">
+    <label for="pisolve">eliminate</label><input id="pisolve" spellcheck="false" placeholder="z">
+    <label for="piorigin">origin of &pi;</label><input id="piorigin" spellcheck="false" placeholder="0">
+  </div>
+  <button type="submit" id="bpi">Compute &pi;</button>
+  <p class="hint">Write powers as <code>**</code>, the imaginary unit as <code>I</code>.
+     Decimals are read exactly: <code>0.3</code> means 3/10.</p>
+</fieldset>
+</form>
+<div id="pibusy" class="busy hidden">computing&hellip;</div>
+<div id="piout"></div>
+</div>
+</details>
+
+<details class="sec locked" id="secrho">
+<summary>&rho;<span class="why">compute &pi; first</span></summary>
+<div class="inner">
+<form id="frho">
+<fieldset>
+  <div class="row">
+    <label for="rho">&rho;</label><input id="rho" spellcheck="false">
+    <label for="rhosolve">eliminate</label><input id="rhosolve" spellcheck="false">
+    <label for="rhoorigin">origin of &rho;</label><input id="rhoorigin" spellcheck="false" placeholder="0">
+  </div>
+  <button type="submit" id="brho">Compute &rho;</button>
+  <p class="hint" id="rhohint"></p>
+</fieldset>
+</form>
+<div id="rhobusy" class="busy hidden">computing&hellip;</div>
+<div id="rhoout"></div>
+</div>
+</details>
+
+<details class="sec locked" id="secmatch">
+<summary>Matching paths<span class="why">compute &rho; first</span></summary>
+<div class="inner">
+<form id="fmatch">
+<fieldset>
+  <p class="hint" style="margin:0 0 .6rem">Tracing &rho;'s critical values over
+     the fibres of &pi; is much the most expensive step, so it is asked for
+     separately &mdash; settle on a &rho; first.</p>
+  <p class="flag"><label>
+    <input type="checkbox" id="numeric"> track the paths numerically
+  </label><span class="note">Follows the solutions along the path instead of
+    re-solving at every step. Much quicker at high degree, where the exact
+    route is not practical; leave it off for small surfaces, where the exact
+    route is instant and exact.</span>
+  <span class="opt off" id="verifyopt">
+    <label class="sub"><input type="checkbox" id="verify" disabled> check each
+      path against an exact solve at its end</label>
+    <span class="note">Only means anything when the paths are tracked: it is
+      the tracking it checks. The strongest check there is, but that one solve
+      can cost many times the tracking -- about twenty times, on a degree-14
+      surface -- so it is off unless you ask for it.</span>
+  </span></p>
+  <button type="submit" id="bmatch">Compute matching paths</button>
+</fieldset>
+</form>
+<div id="matchbusy" class="busy hidden">computing&hellip;</div>
+<div id="matchout"></div>
+</div>
+</details>
+
+<details class="sec locked" id="secmore">
+<summary>Additional computations<span class="why">compute &rho; first</span></summary>
+<div class="inner">
+<p class="hint">Paths that are not vanishing paths: any route through either
+   base, with both ends free to move. Draw one, press Compute, and the result
+   appears beside it &mdash; read the same way as above, so an open path
+   reports the two branches that meet at its end and a closed loop the
+   permutation it induces.</p>
+<div class="tools">
+  <button class="ghost" id="newpi">+ path in the base of &pi;</button>
+  <button class="ghost" id="newrho">+ path in the base of &rho;</button>
+</div>
+<div id="freeout"></div>
+</div>
+</details>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+function addParam(key, value){
+  const row = document.createElement('div'); row.className = 'prow';
+  const k = document.createElement('input'); k.className = 'k';
+  k.placeholder = 'name'; k.spellcheck = false; k.value = key || '';
+  const v = document.createElement('input'); v.className = 'v';
+  v.placeholder = 'value, e.g. -2 or I'; v.spellcheck = false; v.value = value || '';
+  const del = document.createElement('button');
+  del.type = 'button'; del.className = 'del'; del.textContent = '\u00d7';
+  del.title = 'remove'; del.onclick = () => { row.remove(); touched(); };
+  for (const el of [k, v]) el.addEventListener('input', touched);
+  row.append(k, v, del);
+  $('params').appendChild(row);
+  return row;
+}
+
+function readParams(){
+  const out = {};
+  for (const row of $('params').querySelectorAll('.prow')){
+    const k = row.querySelector('.k').value.trim();
+    const v = row.querySelector('.v').value.trim();
+    if (k) out[k] = v;
+  }
+  return out;
+}
+
+function spec(withRho){
+  const s = {
+    domain: $('domain').value.trim(),
+    params: readParams(),
+    pi: {expression: $('pi').value.trim(),
+         solvefor: $('pisolve').value.trim() || undefined,
+         origin: $('piorigin').value.trim() || 0},
+    numeric: $('numeric').checked,
+    verify: $('verify').checked,
+  };
+  if (withRho) s.rho = {expression: $('rho').value.trim(),
+                        solvefor: $('rhosolve').value.trim() || undefined,
+                        origin: $('rhoorigin').value.trim() || 0};
+  return s;
+}
+
+let usePreset = false;   // true only for the automatic first run
+function touched(){ usePreset = false; }
+
+// The page runs either against the local server or, in the built version, a
+// Python runtime inside the browser -- which answers with the object itself
+// rather than a response.  Everything below goes through here, so the rest of
+// the page never has to know which of the two is behind it.
+async function api(path, opts){
+  if (window.HANDLEBODIES_BACKEND)
+    return {json: () => window.HANDLEBODIES_BACKEND(path, opts.body)};
+  return fetch(path, opts);
+}
+
+async function post(body){
+  if (usePreset) body.preset = true;
+  const r = await api('/api/compute', {method:'POST',
+    headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  return r.json();
+}
+
+// Equal scaling is the opening view, not a constraint: the ranges are worked
+// out here from the plot's pixel size and written into the layout, so plotly's
+// "reset axes" comes back to them while a zoom rectangle stays unconstrained.
+function equalScaleRanges(fig, widthPx){
+  const m = Object.assign({l: 80, r: 80, t: 100, b: 80}, fig.layout.margin || {});
+  const h = (fig.layout.height || 450) - m.t - m.b;
+  const w = (widthPx || 700) - m.l - m.r;
+  if (!(w > 10 && h > 10)) return null;
+  const b = (fig.layout.meta || {}).bounds || localBounds(fig);
+  if (!b) return null;
+  const dx = (b[1] - b[0]) || 1, dy = (b[3] - b[2]) || 1;
+  const cx = (b[1] + b[0]) / 2, cy = (b[3] + b[2]) / 2;
+  const unit = Math.max(dx / w, dy / h) * 1.08;      // same units per pixel
+  return {xaxis: {range: [cx - unit * w / 2, cx + unit * w / 2]},
+          yaxis: {range: [cy - unit * h / 2, cy + unit * h / 2]}};
+}
+
+// Traces built in the page (the editor's own) carry plain arrays, so their
+// bounds can be measured here; server-built figures bring theirs in meta.
+function localBounds(fig){
+  let lo = [Infinity, Infinity], hi = [-Infinity, -Infinity];
+  for (const tr of fig.data){
+    if (tr.type === 'scatter3d') continue;
+    for (const [k, arr] of [[0, tr.x], [1, tr.y]]){
+      if (!Array.isArray(arr)) continue;
+      for (const v of arr)
+        if (typeof v === 'number' && isFinite(v)){
+          if (v < lo[k]) lo[k] = v;
+          if (v > hi[k]) hi[k] = v;
+        }
+    }
+  }
+  return isFinite(lo[0]) && isFinite(lo[1]) ? [lo[0], hi[0], lo[1], hi[1]] : null;
+}
+
+function withOpeningView(fig, div){
+  if (!fig.layout || !fig.layout.meta || !fig.layout.meta.equalScale) return fig;
+  const r = equalScaleRanges(fig, div.clientWidth || div.offsetWidth);
+  if (!r) return fig;
+  const layout = Object.assign({}, fig.layout);
+  layout.xaxis = Object.assign({}, layout.xaxis, r.xaxis);
+  layout.yaxis = Object.assign({}, layout.yaxis, r.yaxis);
+  return {data: fig.data, layout};
+}
+
+function plot(host, figure, caption){
+  const wrap = document.createElement('div'); wrap.className = 'fig';
+  const div = document.createElement('div'); wrap.appendChild(div);
+  if (caption){ const p = document.createElement('p');
+    p.className='cap'; p.textContent = caption; wrap.appendChild(p); }
+  host.appendChild(wrap);
+  const shown = withOpeningView(figure, div);
+  Plotly.newPlot(div, shown.data, shown.layout,
+                 {displaylogo:false, responsive:true});
+  return div;
+}
+
+// MathJax is loaded async, so a block can be written before it exists.
+// Queue such blocks and typeset them once it is ready.
+const pendingTex = [];
+function typeset(host){ pendingTex.push(host); flushTex(); }
+function flushTex(){
+  if (!(window.MathJax && MathJax.typesetPromise)) return;
+  const waiting = pendingTex.splice(0);
+  if (waiting.length) MathJax.typesetPromise(waiting).catch(e => console.error(e));
+}
+window.flushTex = flushTex;
+
+// ---- sections ----------------------------------------------------------
+// A section is locked until the computation it needs has been done: there is
+// no point offering rho's box before pi has told us what its variables are.
+
+function unlock(id, open){
+  const sec = $(id);
+  sec.classList.remove('locked');
+  const why = sec.querySelector('.why');
+  if (why) why.textContent = '';
+  if (open) sec.open = true;
+  return sec;
+}
+
+function lock(id, why){
+  const sec = $(id);
+  sec.classList.add('locked');
+  sec.open = false;
+  const w = sec.querySelector('.why');
+  if (w) w.textContent = why;
+}
+
+for (const id of ['secrho', 'secmatch', 'secmore'])
+  $(id).querySelector('summary').addEventListener('click', ev => {
+    if ($(id).classList.contains('locked')) ev.preventDefault();
+  });
+
+// A plot laid out inside a collapsed section has no width to lay out in, so
+// it comes back the wrong size; ask plotly to measure again on the way open.
+// `toggle` does not bubble, hence the capture phase.
+document.addEventListener('toggle', ev => {
+  const el = ev.target;
+  if (!(el.open && el.classList && el.classList.contains('sec'))) return;
+  for (const gd of el.querySelectorAll('.js-plotly-plot'))
+    try { Plotly.Plots.resize(gd); } catch (e) { /* not laid out yet */ }
+}, true);
+
+// ---- what a closed path permutes --------------------------------------
+// A closed path comes back to the fibre it left, so its values end over the
+// same values they started at -- permuted.  Entry j of `perm` is the index of
+// the value branch j ends over.
+
+function cycles(perm){
+  const seen = new Array(perm.length).fill(false);
+  const out = [];
+  for (let j = 0; j < perm.length; j++){
+    if (seen[j]) continue;
+    const c = [];
+    for (let k = j; !seen[k]; k = perm[k]){ seen[k] = true; c.push(k); }
+    if (c.length > 1) out.push('(' + c.join(' ') + ')');
+  }
+  return out.length ? out.join('') : 'the identity';
+}
+
+function permTable(perm){
+  if (!Array.isArray(perm) || !perm.length) return '';
+  const top = perm.map((_, j) => `<td>${j}</td>`).join('');
+  const bot = perm.map(k => `<td>${esc(k)}</td>`).join('');
+  return `<div class="perm"><table>`
+    + `<tr><th>starts at</th>${top}</tr>`
+    + `<tr><th>ends over</th>${bot}</tr></table></div>`
+    + `<p class="cyc">as cycles: <b>${esc(cycles(perm))}</b></p>`;
+}
+
+// Indices name the values over the fibre a path starts from. That is the
+// reference fibre for anything based, and the plots above are labelled by it;
+// a path that starts elsewhere is labelled by its own starting fibre, and the
+// numbers cannot be read against those plots.
+function unbasedNote(based){
+  return based === false
+    ? '<p class="cyc">Indices here are those of the fibre this path starts '
+      + 'from, not the reference fibre; base the path to compare them with '
+      + 'the plots above.</p>'
+    : '';
+}
+
+// A figure, and beneath it the permutation when the path was a closed one.
+function showResult(host, figure, caption, perm, based){
+  const div = plot(host, figure, caption);
+  const extra = permTable(perm) + unbasedNote(based);
+  if (extra) div.parentNode.insertAdjacentHTML('beforeend', extra);
+  return div;
+}
+
+function chips(items){
+  return '<div class="facts">' + items.map(([k,v,bad]) =>
+    `<span class="chip${bad?' warn':''}">${esc(k)} <b>${esc(v)}</b></span>`).join('') + '</div>';
+}
+
+function showError(host, msg){
+  host.innerHTML = `<div class="err">${esc(msg)}</div>`;
+}
+
+// A failure while rendering must not leave a blank page with no explanation.
+window.addEventListener('error', ev => {
+  const host = $('piout') || document.querySelector('main');
+  if (host && !host.dataset.failed){
+    host.dataset.failed = '1';
+    const div = document.createElement('div');
+    div.className = 'err';
+    div.textContent = `${ev.message}  (line ${ev.lineno}:${ev.colno})`;
+    host.appendChild(div);
+  }
+});
+
+function renderPi(r){
+  const host = $('piout');
+  if (r.pi && r.pi.error) { showError(host, r.pi.error); return false; }
+  const p = r.pi;
+  host.innerHTML =
+    chips([['critical values', p.n_values],
+           ['critical points', p.n_points, p.n_points !== p.n_values],
+           ['punctures', p.punctures],
+           ['ranks at infinity', '[' + p.ranks.join(', ') + ']'],
+           ['smooth', r.smooth === null ? '?' : (r.smooth ? 'yes' : 'no'), r.smooth === false]])
+    + `<div class="tex">$$${p.tex}$$</div>`;
+  typeset(host);
+  plot(host, p.figure, 'Critical values of pi, with the reference fibre in green.');
+  LAST.pi = {values: p.values, origin: p.origin_xy};
+  unlock('secrho', true);
+  $('rhohint').textContent =
+    'A linear form in the variables other than ' + ($('pisolve').value.trim() || 'the eliminated one') + '.';
+  return true;
+}
+
+function renderMatching(r){
+  const host = $('matchout');
+  host.innerHTML = '';
+  unlock('secmatch', true);
+  if (r.matching && r.matching.error){ showError(host, r.matching.error); return; }
+  const h = document.createElement('h2');
+  h.textContent = 'Matching paths induced by \u03c0';
+  host.appendChild(h);
+  for (const m of r.matching){
+    if (m.failed){
+      const div = document.createElement('div');
+      div.className = 'err';
+      div.textContent = `${m.name}: ${m.result}`;
+      host.appendChild(div);
+    } else if (m.target === null || m.target === undefined)
+      showResult(host, m.figure, m.name + ' \u2014 ' + m.result, m.monodromy);
+    else addPicker(host, m, r.pi.values, r.pi.origin_xy, 'pi');
+  }
+}
+
+function renderRho(r){
+  const host = $('rhoout');
+  if (r.pi && r.pi.error) { showError(host, r.pi.error); return; }
+  if (r.rho && r.rho.error) { showError(host, r.rho.error); return; }
+  const q = r.rho;
+  host.innerHTML = '<h2>Critical values of &rho;</h2>'
+    + chips([['critical values', q.n_values],
+             ['critical points', q.n_points, q.n_points !== q.n_values]])
+    + `<div class="tex">$$${q.tex}$$</div>`;
+  typeset(host);
+  plot(host, q.critical_figure, 'Critical values of rho, with the reference fibre in green.');
+
+  let h = document.createElement('h2'); h.textContent = 'Generic fibre of \u03c1';
+  host.appendChild(h);
+  plot(host, q.fibre_figure,
+       'The points of the reference fibre. These are what collide below.');
+
+  h = document.createElement('h2'); h.textContent = 'Vanishing cycles of \u03c1';
+  host.appendChild(h);
+  for (const v of q.vanishing){
+    if (v.target === null || v.target === undefined)   // path fixed in the example file
+      showResult(host, v.figure, v.name + ' \u2014 ' + v.result, v.monodromy);
+    else addPicker(host, v, q.values, q.origin_xy, 'rho');
+  }
+
+  LAST.rho = {values: q.values, origin: q.origin_xy};
+  // The matching paths are asked for separately; they cost far more than
+  // everything above and rho usually wants several attempts first.
+  unlock('secmatch', true);
+  unlock('secmore', false);
+  $('matchout').innerHTML = '';
+}
+
+//: the critical values and reference point of each base, as last computed.
+//: A free path is drawn against them, so it needs them after the fact.
+const LAST = {pi: null, rho: null};
+
+$('fpi').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  $('bpi').disabled = true; $('pibusy').classList.remove('hidden');
+  $('piout').innerHTML = ''; $('rhoout').innerHTML = '';
+  clearExtras();
+  lock('secrho', 'compute \u03c0 first');
+  lock('secmatch', 'compute \u03c1 first');
+  lock('secmore', 'compute \u03c1 first');
+  try {
+    renderPi(await post(spec(false)));
+  } catch (e) { showError($('piout'), e.message); }
+  finally { $('bpi').disabled = false; $('pibusy').classList.add('hidden'); }
+});
+
+$('frho').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  $('brho').disabled = true; $('rhobusy').classList.remove('hidden');
+  $('rhoout').innerHTML = ''; $('matchout').innerHTML = '';
+  clearExtras();
+  lock('secmatch', 'compute \u03c1 first');
+  lock('secmore', 'compute \u03c1 first');
+  try {
+    renderRho(await post(spec(true)));
+  } catch (e) { showError($('rhoout'), e.message); }
+  finally { $('brho').disabled = false; $('rhobusy').classList.add('hidden'); }
+});
+
+$('addparam').addEventListener('click', () => { addParam(); touched(); });
+
+$('fmatch').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  $('bmatch').disabled = true; $('matchbusy').classList.remove('hidden');
+  try {
+    const body = spec(true); body.matching = true;
+    const r = await post(body);
+    if (r.pi && r.pi.error) { showError($('matchout'), r.pi.error); return; }
+    if (r.rho && r.rho.error) { showError($('matchout'), r.rho.error); return; }
+    renderMatching(r);
+  } catch (e) { showError($('matchout'), e.message); }
+  finally { $('bmatch').disabled = false; $('matchbusy').classList.add('hidden'); }
+});
+
+// ---- path picker -------------------------------------------------------
+// The left figure is the path in rho's base; the right is what tracing along
+// it produces.  Editing the path and recomputing is how a matching path other
+// than the straight one gets found.
+
+const EDITORS = {};
+
+function untitled(fig){
+  // inside a picker the heading already says what this is, and a title in the
+  // narrow column collides with plotly's toolbar
+  const solid = !!(fig.layout && fig.layout.scene);
+  const layout = Object.assign({}, fig.layout, {title: null,
+    height: solid ? (fig.layout.height || 620) : 440,
+    margin: Object.assign({}, fig.layout.margin || {}, {t: 12})});
+  return {data: fig.data, layout};
+}
+
+function defaultWaypoints(item, marks, origin){
+  // the straight vanishing path this entry was computed with; a free path has
+  // no target of its own, so it opens on the first critical value and is
+  // dragged from there
+  const target = marks[item.target] || marks[0] || [origin[0] + 1, origin[1]];
+  return [[origin[0], origin[1]], [target[0], target[1]]];
+}
+
+// A closed path repeats its first corner at the end and is flagged as closed;
+// the server takes that seam as a corner like any other, and since a rounded
+// corner is taken *through* its node the path still begins and ends there
+// exactly -- which `is_closed` needs, asking for equality, and which keeps a
+// based path on the reference fibre however much its base point is rounded.
+function pathWaypoints(ed){
+  return ed.closed && ed.wp.length > 1 ? ed.wp.concat([ed.wp[0]]) : ed.wp;
+}
+
+function pathRadii(ed){
+  return ed.closed && ed.wp.length > 1 ? ed.radius.concat([0]) : ed.radius;
+}
+
+// Every vertex of a closed loop is a corner of it, the base point included; on
+// an open path the two ends are where it stops, and there is nothing there to
+// round.
+function roundable(ed, i){
+  if (i < 0) return false;
+  if (ed.closed && ed.wp.length > 1) return true;
+  return i > 0 && i < ed.wp.length - 1;
+}
+
+function editorTraces(wp, marks, origin){
+  return [
+    {x: marks.map(m => m[0]), y: marks.map(m => m[1]), mode: 'markers+text',
+     text: marks.map((_, i) => String(i)), textposition: 'top right',
+     marker: {size: 9, color: '#d62728'}, name: 'critical values',
+     hovertemplate: '%{text}: %{x:.4f} %{y:+.4f}i<extra></extra>'},
+    {x: [origin[0]], y: [origin[1]], mode: 'markers',
+     marker: {size: 13, color: '#2ca02c', symbol: 'diamond'},
+     name: 'reference fibre', hoverinfo: 'skip'},
+    {x: [], y: [], mode: 'lines', line: {color: '#1f77b4', width: 2},
+     name: 'path', hoverinfo: 'skip'},
+    {x: wp.map(p => p[0]), y: wp.map(p => p[1]), mode: 'markers',
+     marker: cornerStyle(wp.length, -1, i => i === 0 || i === wp.length - 1),
+     name: 'corners', hovertemplate: '%{x:.4f} %{y:+.4f}i<extra></extra>'},
+  ];
+}
+
+// The ends of a vanishing path are the reference fibre and the critical value;
+// moving either would stop it being a vanishing path for that value, so they
+// are drawn as locked and refuse to be dragged or removed.
+const START_COLOUR = '#9467bd';      // where the path sets off from
+
+function cornerStyle(n, sel, lockedAt){
+  const colour = [], size = [], symbol = [];
+  for (let i = 0; i < n; i++){
+    const locked = lockedAt ? lockedAt(i) : false;
+    const start = (i === 0);
+    colour.push(i === sel ? '#ff7f0e'
+              : start ? START_COLOUR
+              : locked ? '#9aa0a6' : '#1f77b4');
+    size.push(i === sel ? 15 : start ? 13 : locked ? 9 : 11);
+    symbol.push(locked ? 'square' : 'circle');
+  }
+  return {color: colour, size, symbol, line: {color: '#fff', width: 2}};
+}
+
+// Which way round the path is traced matters -- a loop's monodromy is its
+// inverse the other way -- and a drawn path shows no direction of itself.
+function directionArrow(ed){
+  if (ed.wp.length < 2) return [];
+  const [a, b] = [ed.wp[0], ed.wp[1]];
+  const at = t => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  const tail = at(0.42), head = at(0.58);
+  if (tail[0] === head[0] && tail[1] === head[1]) return [];
+  return [{x: head[0], y: head[1], ax: tail[0], ay: tail[1],
+           xref: 'x', yref: 'y', axref: 'x', ayref: 'y', text: '',
+           showarrow: true, arrowhead: 2, arrowsize: 1.5, arrowwidth: 2,
+           arrowcolor: START_COLOUR}];
+}
+
+// A vanishing path has both ends fixed: they are the reference fibre and the
+// critical value, and moving either would stop it being one.  A free path is
+// pinned only where it is based -- at the reference fibre, which is what makes
+// its indices the labelled ones -- and not at all when it is not.
+function isLocked(ed, i){
+  if (!ed.free) return i === 0 || i === ed.wp.length - 1;
+  return ed.based && i === 0;
+}
+
+const EDITOR_LAYOUT = {
+  template: 'plotly_white', margin: {l: 44, r: 12, t: 10, b: 38},
+  height: 340, xaxis: {title: 'Re'}, yaxis: {title: 'Im'},
+  showlegend: false, hovermode: 'closest',
+};
+
+function pixelToData(gd, ev){
+  const layer = gd.querySelector('.nsewdrag');
+  const fl = gd._fullLayout;
+  if (!layer || !fl || !fl.xaxis || !fl.xaxis.p2d) return null;
+  const r = layer.getBoundingClientRect();
+  return [fl.xaxis.p2d(ev.clientX - r.left), fl.yaxis.p2d(ev.clientY - r.top)];
+}
+
+function nearestWaypoint(gd, ev, wp){
+  const layer = gd.querySelector('.nsewdrag');
+  const fl = gd._fullLayout;
+  if (!layer || !fl) return -1;
+  const r = layer.getBoundingClientRect();
+  const px = ev.clientX - r.left, py = ev.clientY - r.top;
+  let best = -1, bestD = 14;              // pixels
+  wp.forEach((p, i) => {
+    const d = Math.hypot(fl.xaxis.d2p(p[0]) - px, fl.yaxis.d2p(p[1]) - py);
+    if (d < bestD) { bestD = d; best = i; }
+  });
+  return best;
+}
+
+function insertionIndex(wp, pt){
+  // put the new corner into whichever segment it lies closest to
+  let best = wp.length - 1, bestD = Infinity;
+  for (let i = 0; i < wp.length - 1; i++){
+    const [ax, ay] = wp[i], [bx, by] = wp[i + 1];
+    const vx = bx - ax, vy = by - ay;
+    const len2 = vx * vx + vy * vy || 1;
+    let t = ((pt[0] - ax) * vx + (pt[1] - ay) * vy) / len2;
+    t = Math.max(0, Math.min(1, t));
+    const d = Math.hypot(pt[0] - (ax + t * vx), pt[1] - (ay + t * vy));
+    if (d < bestD) { bestD = d; best = i + 1; }
+  }
+  return best;
+}
+
+function redrawPath(ed, preview){
+  Plotly.restyle(ed.gd, {x: [ed.wp.map(p => p[0])], y: [ed.wp.map(p => p[1])],
+                         marker: [cornerStyle(ed.wp.length, ed.sel,
+                                                 i => isLocked(ed, i))]}, [3]);
+  Plotly.relayout(ed.gd, {annotations: directionArrow(ed)});
+  if (preview !== false) refreshPreview(ed);
+  showCornerControl(ed);
+}
+
+// The rounded path is drawn by asking the server for it, so the curve shown is
+// the one that will actually be traced rather than a second implementation.
+async function refreshPreview(ed){
+  const token = ++ed.token;
+  try {
+    const r = await api('/api/path', {method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({waypoints: pathWaypoints(ed),
+                            steps: Number(ed.steps.value) || 70,
+                            rounding: pathRadii(ed),
+                            closed: ed.closed})}).then(x => x.json());
+    if (token !== ed.token || !r.ok) return;
+    Plotly.restyle(ed.gd, {x: [r.path.map(p => p[0])], y: [r.path.map(p => p[1])]}, [2]);
+  } catch (e) { /* preview only */ }
+}
+
+function showCornerControl(ed){
+  const on = roundable(ed, ed.sel);
+  ed.corner.classList.toggle('on', on);
+  if (on){
+    ed.round.value = ed.radius[ed.sel] || 0;
+    ed.selnote.textContent = ed.closed && ed.sel === 0
+      ? 'base point' : 'corner ' + ed.sel;
+  }
+}
+
+function attachEditing(ed){
+  const gd = ed.gd;
+  let dragging = -1;
+  gd.addEventListener('mousedown', ev => {
+    const hit = nearestWaypoint(gd, ev, ed.wp);
+    if (hit < 0) return;
+    ev.preventDefault(); ev.stopPropagation();
+    // Being fixed stops a corner being moved or removed. It does not stop it
+    // being selected: a closed path's base point is fixed and still has a
+    // turn to round, so it has to be reachable.
+    if (!isLocked(ed, hit)){
+      if (ev.altKey || ev.ctrlKey || ev.metaKey){     // remove a corner
+        if (ed.wp.length <= 2) return;
+        ed.wp.splice(hit, 1); ed.radius.splice(hit, 1);
+        if (ed.sel === hit) ed.sel = -1;
+        else if (ed.sel > hit) ed.sel--;
+        redrawPath(ed);
+        return;
+      }
+      dragging = hit;
+    }
+    ed.sel = hit;                                     // clicking selects it
+    redrawPath(ed, false);
+  }, true);
+  window.addEventListener('mousemove', ev => {
+    if (dragging < 0) return;
+    const pt = pixelToData(gd, ev);
+    if (pt){ ed.wp[dragging] = pt; redrawPath(ed, false); }
+  });
+  window.addEventListener('mouseup', () => {
+    if (dragging >= 0){ dragging = -1; refreshPreview(ed); }
+  });
+  gd.addEventListener('click', ev => {
+    if (!ev.shiftKey) return;                          // shift-click adds
+    const pt = pixelToData(gd, ev);
+    if (!pt) return;
+    const at = insertionIndex(ed.wp, pt);
+    ed.wp.splice(at, 0, pt); ed.radius.splice(at, 0, 0);
+    ed.sel = at;
+    redrawPath(ed);
+    ev.preventDefault(); ev.stopPropagation();
+  }, true);
+}
+
+async function recompute(key){
+  const ed = EDITORS[key];
+  ed.button.disabled = true; ed.button.textContent = 'computing\u2026';
+  try {
+    const r = await api('/api/trace', {method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({spec: spec(true), waypoints: pathWaypoints(ed),
+                            steps: Number(ed.steps.value) || 70,
+                            rounding: pathRadii(ed), closed: ed.closed,
+                            level: ed.level,
+                            numeric: $('numeric').checked,
+                            verify: $('verify').checked,
+                            label: ed.label})}).then(x => x.json());
+    if (!r.ok){ showError(ed.out, r.error || 'failed'); return; }
+    ed.out.innerHTML = '';
+    showResult(ed.out, untitled(r.figure), null, r.monodromy, r.based);
+  } catch (e){ showError(ed.out, e.message); }
+  finally { ed.button.disabled = false; ed.button.textContent = ed.verb; }
+}
+
+function addPicker(host, v, marks, origin, level, opts){
+  opts = opts || {};
+  const free = !!opts.free;
+  const key = opts.key || (level + v.target);
+  const base = level === 'pi' ? '&pi;' : '&rho;';
+  const box = document.createElement('div'); box.className = 'picker';
+  box.innerHTML = `
+    <div>
+      <h3>${esc(v.name)} &mdash; path in the base of ${base}</h3>
+      <div id="ed-${key}"></div>
+      <div class="tools">
+        <label>samples <input type="number" id="st-${key}" min="8" max="2000" value="70"></label>
+        <span class="corner" id="cn-${key}">
+          <span class="selnote" id="sn-${key}"></span>
+          <label>rounding <input type="range" id="rd-${key}" min="0" max="1" step="0.05" value="0"></label>
+        </span>
+        ${free ? `<label title="pin the path to the reference fibre, so that\
+ the indices are the ones on the plots above"><input type="checkbox"\
+ id="bs-${key}" checked> based</label>
+        <label><input type="checkbox" id="cl-${key}"> closed loop</label>` : ''}
+        <button id="go-${key}">${free ? 'Compute' : 'Recompute'}</button>
+        <button class="ghost" id="rs-${key}">Reset</button>
+        ${free ? `<button class="ghost" id="rm-${key}">Remove</button>` : ''}
+      </div>
+      <p class="keys">shift-click to add a corner &middot; click one to select it, drag to move
+         &middot; alt-click to remove &middot; the start is purple, and the
+         arrow gives the direction &middot; ${free
+           ? 'a based path is pinned at the reference fibre'
+           : 'the ends are fixed'}</p>
+    </div>
+    <div>
+      <h3>${level === 'pi' ? 'matching path along it' : 'collisions along it'}</h3>
+      <div id="out-${key}"></div>
+    </div>`;
+  host.appendChild(box);
+
+  const wp = defaultWaypoints(v, marks, origin);
+  const gd = $(`ed-${key}`);
+  const edFig = withOpeningView(
+    {data: editorTraces(wp, marks, origin),
+     layout: Object.assign({meta: {equalScale: true}}, EDITOR_LAYOUT)}, gd);
+  Plotly.newPlot(gd, edFig.data, edFig.layout,
+                 {displaylogo: false, responsive: true});
+  const out = $(`out-${key}`);
+  if (free)
+    out.innerHTML = '<p class="blank">Draw a path, then press Compute.</p>';
+  else {
+    const shown = withOpeningView(untitled(v.figure), out);
+    Plotly.newPlot(out, shown.data, shown.layout,
+                   {displaylogo: false, responsive: true});
+    out.insertAdjacentHTML('beforeend', permTable(v.monodromy));
+  }
+
+  const ed = EDITORS[key] = {wp, gd, out, label: v.name, level, sel: -1, token: 0,
+    free, closed: false, based: true, verb: free ? 'Compute' : 'Recompute',
+    radius: wp.map(() => 0),
+    steps: $(`st-${key}`), round: $(`rd-${key}`), corner: $(`cn-${key}`),
+    selnote: $(`sn-${key}`), button: $(`go-${key}`)};
+  attachEditing(ed);
+  redrawPath(ed);
+  ed.button.addEventListener('click', () => recompute(key));
+  ed.round.addEventListener('input', () => {
+    if (roundable(ed, ed.sel)){
+      ed.radius[ed.sel] = Number(ed.round.value);
+      refreshPreview(ed);
+    }
+  });
+  ed.steps.addEventListener('change', () => refreshPreview(ed));
+  $(`rs-${key}`).addEventListener('click', () => {
+    ed.wp = defaultWaypoints(v, marks, origin);
+    ed.radius = ed.wp.map(() => 0); ed.sel = -1;
+    redrawPath(ed);
+  });
+  if (free){
+    $(`cl-${key}`).addEventListener('change', ev => {
+      ed.closed = ev.target.checked;
+      redrawPath(ed);          // closing the loop makes every vertex a corner
+    });
+    $(`bs-${key}`).addEventListener('change', ev => {
+      ed.based = ev.target.checked;
+      // Basing it means running through the reference fibre, so the first
+      // corner goes there and stays.
+      if (ed.based) ed.wp[0] = [origin[0], origin[1]];
+      redrawPath(ed);
+    });
+    $(`rm-${key}`).addEventListener('click', () => {
+      delete EDITORS[key];
+      box.remove();
+      if (!$('freeout').querySelector('.picker')) freeBlank();
+    });
+  }
+  return ed;
+}
+
+// ---- free paths --------------------------------------------------------
+// Everything above traces a vanishing path: it starts at the reference fibre
+// and ends at a critical value.  These do not have to.  A closed loop reports
+// the monodromy it induces; anything else, the two branches nearest at its end.
+
+let freeCount = 0;
+
+function freeBlank(){
+  $('freeout').innerHTML =
+    '<p class="blank">No extra paths yet.</p>';
+}
+
+function clearExtras(){
+  for (const k of Object.keys(EDITORS)) if (EDITORS[k].free) delete EDITORS[k];
+  freeCount = 0;
+  freeBlank();
+}
+
+function addFreePath(level){
+  const src = LAST[level];
+  if (!src) return;
+  const host = $('freeout');
+  if (!host.querySelector('.picker')) host.innerHTML = '';
+  const key = 'free' + (++freeCount);
+  addPicker(host, {name: `free path ${freeCount}`}, src.values, src.origin,
+            level, {free: true, key});
+  $(`ed-${key}`).scrollIntoView({behavior: 'smooth', block: 'center'});
+}
+
+$('newpi').addEventListener('click', () => addFreePath('pi'));
+$('newrho').addEventListener('click', () => addFreePath('rho'));
+freeBlank();
+
+// Pre-fill from an example file. The server substitutes the preset into the
+// placeholder below, so there is nothing to wait for.
+const PRESET = /*PRESET*/null;
+(function(p){
+  if (!p || !p.domain) return;
+  $('domain').value = p.domain || '';
+  for (const [k, v] of Object.entries(p.params_dict || {})) addParam(k, v);
+  $('pi').value = p.pi || '';
+  $('pisolve').value = p.pisolve || '';
+  $('piorigin').value = p.piorigin || '0';
+  $('rho').value = p.rho || '';
+  $('rhosolve').value = p.rhosolve || '';
+  $('rhoorigin').value = p.rhoorigin || '0';
+  if (p.auto){
+    usePreset = true;
+    if (p.result){          // computed before the browser opened
+      if (renderPi(p.result) && p.result.rho){
+        renderRho(p.result);
+        if (p.result.matching) renderMatching(p.result);
+      }
+    } else {
+      $('fpi').requestSubmit();
+      if (p.rho) setTimeout(() => $('frho').requestSubmit(), 50);
+    }
+  }
+  // Any edit means the file's own paths no longer apply.
+  for (const id of ['domain','pi','pisolve','piorigin','rho','rhosolve','rhoorigin'])
+    $(id).addEventListener('input', touched);
+})(PRESET);
+
+// Checking a path against an exact solve is checking the tracking, so there is
+// nothing for it to do until the tracking is asked for.
+function syncVerify(){
+  const on = $('numeric').checked;
+  $('verify').disabled = !on;
+  if (!on) $('verify').checked = false;
+  $('verifyopt').classList.toggle('off', !on);
+}
+$('numeric').addEventListener('change', syncVerify);
+syncVerify();
+
+// Neither flag changes the surface, so the paths a file declares still apply
+// and `touched` is not called -- but what is already drawn was computed the
+// other way, and should not be left looking current.
+for (const el of [$('numeric'), $('verify')])
+  el.addEventListener('change', () => {
+    const host = $('matchout');
+    if (host.innerHTML && !host.querySelector('.stale'))
+      host.insertAdjacentHTML('afterbegin',
+        '<div class="err stale">The paths below were computed the other way. '
+        + 'Press "Compute matching paths" to redo them.</div>');
+  });
+</script>
+<script>
+// The page's back end when there is no server: the same Python the local
+// tool runs, inside the browser.  It is started as soon as the page loads,
+// because a surface has to be typed in before anything can be asked of it,
+// and that is long enough to cover the download.
+(function(){
+'use strict';
+
+const PYODIDE = 'https://cdn.jsdelivr.net/pyodide/v0.28.3/full/';
+const RUNTIME = "\"\"\"What the page needs from Python that the browser does not already have.\n\nLoaded into Pyodide by pyodide_boot.js and run before anything imports\nhandlebodies.web.  Two things are missing there.\n\nSingular is not present, so the Groebner work falls back to sympy.  That needs\nno code: handlebodies looks for the binary at runtime and has always run\neither way.  A surface of a degree high enough to want Singular is one to run\nlocally.\n\nplotly is not present either, and is not worth carrying: the figures are only\never serialised for the page to draw, so the handful of constructors web.py\nuses are supplied here rather than fetching a multi-megabyte wheel that would\nbe thrown away directly after `to_plotly_json`.\n\"\"\"\n\nimport json\nimport math\nimport sys\nimport types\n\nimport numpy as np\n\n#: layout properties that take sub-properties, so that plotly's underscore\n#: shorthand -- xaxis_title for xaxis.title -- can be spelled out.  A property\n#: whose name is not one of these keeps its underscore and stays whole.\nCONTAINERS = {'xaxis', 'yaxis', 'zaxis', 'scene', 'legend', 'margin',\n              'title', 'font', 'camera'}\n\n\ndef plain(value):\n    \"\"\"The same value with nothing in it that ``json.dumps`` would refuse.\n\n    Arrays become lists and numpy scalars become plain numbers.  A value that\n    is not finite becomes null, which plotly draws as a break in the line --\n    which is what it means: the point where a path could not be followed.\n    \"\"\"\n    if isinstance(value, dict):\n        return {k: plain(v) for k, v in value.items()}\n    if isinstance(value, np.ndarray):\n        return plain(value.tolist())\n    if isinstance(value, (list, tuple)):\n        return [plain(v) for v in value]\n    if isinstance(value, np.generic):\n        value = value.item()\n    if isinstance(value, float):\n        return value if math.isfinite(value) else None\n    return value\n\n\ndef expand(layout, key, value):\n    \"\"\"Set one layout property, spelling out the underscore shorthand.\"\"\"\n    head, _, rest = key.partition('_')\n    if rest and head in CONTAINERS:\n        inner = layout.setdefault(head, {})\n        if isinstance(inner, dict):\n            return expand(inner, rest, value)\n    layout[key] = value\n\n\ndef titles(value):\n    \"\"\"Titles given as bare strings, written the long way plotly writes them.\"\"\"\n    if not isinstance(value, dict):\n        return value\n    return {k: {'text': v} if k == 'title' and isinstance(v, str) else titles(v)\n            for k, v in value.items()}\n\n\nclass Trace(dict):\n    \"\"\"One plotly trace.\n\n    A trace is a dictionary on the wire, and web.py reads `x` and `y` back off\n    the traces of a finished figure to work out its bounds, so it has to be\n    readable both ways.  Keys given as None are dropped, as plotly drops them.\n    \"\"\"\n\n    def __init__(self, kind, **kw):\n        super().__init__(type=kind)\n        self.update({k: v for k, v in kw.items() if v is not None})\n\n    def __getattr__(self, name):\n        try:\n            return self[name]\n        except KeyError:\n            raise AttributeError(name) from None\n\n\nclass Figure:\n    \"\"\"Traces and a layout, and nothing else that plotly's Figure would do.\"\"\"\n\n    def __init__(self, *traces):\n        self.data = []\n        self.layout = {}\n        for trace in traces:\n            self.add_trace(trace)\n\n    def add_trace(self, trace):\n        self.data.append(trace)\n        return self\n\n    def update_layout(self, **kw):\n        for key, value in kw.items():\n            if value is not None:\n                expand(self.layout, key, value)\n        return self\n\n    def to_plotly_json(self):\n        return plain({'data': list(self.data), 'layout': titles(self.layout)})\n\n\ndef install():\n    \"\"\"Put the stand-in where ``import plotly.graph_objects`` will find it.\n\n    Named templates are left as the string web.py asks for; the page puts the\n    real one back, so a 6 KB theme is not copied out of Python per figure.\n    \"\"\"\n    if 'plotly.graph_objects' in sys.modules:\n        return\n    go = types.ModuleType('plotly.graph_objects')\n    go.Figure = Figure\n    go.Scatter = lambda **kw: Trace('scatter', **kw)\n    go.Scatter3d = lambda **kw: Trace('scatter3d', **kw)\n    plotly = types.ModuleType('plotly')\n    plotly.graph_objects = go\n    sys.modules['plotly'] = plotly\n    sys.modules['plotly.graph_objects'] = go\n\n\ndef dispatch(path, body):\n    \"\"\"Answer one of the page's API calls.  JSON text in, JSON text out.\n\n    Failures are reported the way the local server reports them rather than\n    raised, so a surface that cannot be computed leaves the page standing.\n    \"\"\"\n    install()\n    from handlebodies.compute import answer\n    try:\n        result = answer(path, json.loads(body or '{}'))\n    except Exception as exc:\n        result = {'ok': False, 'error': f'{type(exc).__name__}: {exc}'}\n    return json.dumps(result)\n";      // tools/browser_runtime.py, injected
+
+const style = document.createElement('style');
+style.textContent = `
+#boot{position:fixed;left:50%;transform:translateX(-50%);bottom:1rem;z-index:50;
+      padding:.45rem 1rem;border-radius:999px;border:1px solid var(--line);
+      background:var(--panel);color:var(--muted);font-size:.85rem;
+      box-shadow:0 1px 6px rgba(0,0,0,.08);transition:opacity .6s .8s}
+#boot.gone{opacity:0;pointer-events:none}
+#boot.bad{border-color:var(--bad);color:var(--bad);background:#fdf3f2}`;
+document.head.appendChild(style);
+
+const banner = document.createElement('div');
+banner.id = 'boot';
+document.body.appendChild(banner);
+function say(text, state){
+  banner.textContent = text;
+  banner.className = state || '';
+}
+
+// The figures name their theme rather than carrying it, so that a 6 KB
+// template is not copied out of Python once per plot.  It is put back here.
+let THEME = null;
+function themed(value){
+  if (Array.isArray(value)) return value.map(themed);
+  if (value && typeof value === 'object'){
+    if (value.layout && value.layout.template === 'plotly_white' && THEME)
+      value.layout.template = THEME;
+    for (const k of Object.keys(value)) themed(value[k]);
+  }
+  return value;
+}
+
+function script(src){
+  return new Promise((ok, no) => {
+    const el = document.createElement('script');
+    el.src = src;
+    el.onload = ok;
+    el.onerror = () => no(new Error('could not load ' + src));
+    document.head.appendChild(el);
+  });
+}
+
+let ready = null;
+async function boot(){
+  say('starting Python in the browser…');
+  const [, theme] = await Promise.all([
+    script(PYODIDE + 'pyodide.js'),
+    fetch('plotly_white.json').then(r => r.json()).catch(() => null),
+  ]);
+  THEME = theme;
+  const py = await loadPyodide({indexURL: PYODIDE});
+  say('loading sympy and numpy…');
+  await py.loadPackage(['numpy', 'sympy']);
+  const zip = await fetch('handlebodies.zip').then(r => r.arrayBuffer());
+  py.unpackArchive(zip, 'zip', {extractDir: '/home/pyodide'});
+  // The stand-in for plotly has to be in place before anything imports
+  // handlebodies.web, so it is registered before the first call, not lazily.
+  py.runPython(RUNTIME + '\ninstall()\n');
+  const dispatch = py.runPython('dispatch');
+  say('ready', 'gone');
+  return dispatch;
+}
+
+window.HANDLEBODIES_BACKEND = async function(path, body){
+  try {
+    const dispatch = await (ready || (ready = boot()));
+    // The computation holds the only thread there is, so yield first and let
+    // the button that started it paint as busy before everything stops.
+    await new Promise(r => setTimeout(r, 0));
+    return themed(JSON.parse(dispatch(path, body || '{}')));
+  } catch (e){
+    say('could not start: ' + (e.message || e), 'bad');
+    return {ok: false, error: String(e.message || e)};
+  }
+};
+
+ready = boot();
+ready.catch(() => {});      // the error is already on the banner
+})();
+
+</script>
