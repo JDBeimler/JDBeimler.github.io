@@ -231,7 +231,7 @@ function addParam(key, value){
   v.placeholder = 'value, e.g. -2 or I'; v.spellcheck = false; v.value = value || '';
   const del = document.createElement('button');
   del.type = 'button'; del.className = 'del'; del.textContent = '\u00d7';
-  del.title = 'remove'; del.onclick = () => { row.remove(); touched(); };
+  del.title = 'remove'; del.onclick = () => { row.remove(); touched(); invalidateExceptional(); };
   for (const el of [k, v]) el.addEventListener('input', touched);
   row.append(k, v, del);
   $('params').appendChild(row);
@@ -593,8 +593,14 @@ function renderPi(r){
              ['ranks at infinity', '[' + p.ranks.join(', ') + ']']], 'Fibre:')
     + plumbingTrees(p.plumbings);
   typeset(host);
-  plot(host, p.figure, 'Critical values of pi, with the reference fibre in green.');
-  LAST.pi = {values: p.values, origin: p.origin_xy};
+  invalidateExceptional();
+  p.figure.data.push(exceptionalTrace([]));
+  const gd = plot(host, p.figure, 'Critical values of pi, with the reference fibre in green.');
+  const note = document.createElement('p'); note.className = 'hint';
+  note.textContent = 'Choose rho to locate its non-Morse fibres.';
+  host.appendChild(note);
+  LAST.pi = {values: p.values, origin: p.origin_xy, gd, note,
+             geometry: piGeometry(spec(false))};
   unlock('secrho', true);
   $('rhohint').textContent =
     'A linear form in the variables other than ' + ($('pisolve').value.trim() || 'the eliminated one') + '.';
@@ -622,6 +628,7 @@ function renderMatching(r){
 }
 
 function renderRho(r){
+  refreshExceptional();
   const host = $('rhoout');
   if (r.pi && r.pi.error) { showError(host, r.pi.error); return; }
   if (r.rho && r.rho.error) { showError(host, r.rho.error); return; }
@@ -641,7 +648,12 @@ function renderRho(r){
   h = document.createElement('h2'); h.textContent = 'Vanishing cycles of \u03c1';
   host.appendChild(h);
   for (const v of q.vanishing){
-    if (v.target === null || v.target === undefined)   // path fixed in the example file
+    if (v.failed){
+      const div = document.createElement('div');
+      div.className = 'err';
+      div.textContent = `${v.name}: ${v.result}`;
+      host.appendChild(div);
+    } else if (v.target === null || v.target === undefined)   // path fixed in the example file
       showResult(host, v.figure, v.name + ' \u2014 ' + v.result, v.monodromy);
     else addPicker(host, v, q.values, q.origin_xy, 'rho');
   }
@@ -657,6 +669,81 @@ function renderRho(r){
 //: the critical values and reference point of each base, as last computed.
 //: A free path is drawn against them, so it needs them after the fact.
 const LAST = {pi: null, rho: null};
+
+// Exceptional values are obstacles, never vanishing-path targets. Keep their
+// trace after all existing traces so critical labels and editor indices stay put.
+const EXCEPTIONAL = {serial: 0, key: null, values: []};
+function piGeometry(body){
+  return JSON.stringify([body.domain, body.params, body.pi]);
+}
+function exceptionalTrace(values){
+  return {x: values.map(z => z[0]), y: values.map(z => z[1]),
+    // The labels are kept but not drawn: they are what %{text} resolves to
+    // in the hover, and an obstacle that is never a path target does not earn
+    // permanent room on a plot that already labels every critical value.
+    mode: 'markers', text: values.map((_, i) => 'E' + i),
+    name: 'rho non-Morse',
+    marker: {symbol: 'x', size: 11, color: '#e08000'},
+    hovertemplate: '%{text}: rho non-Morse on smooth pi fibre<br>%{x:.6g} %{y:+.6g}i<extra></extra>'};
+}
+function paintExceptional(fit=false){
+  const tr = exceptionalTrace(EXCEPTIONAL.values);
+  const plots = [];
+  if (LAST.pi && LAST.pi.gd.isConnected) plots.push(LAST.pi.gd);
+  for (const ed of Object.values(EDITORS))
+    if (ed.level === 'pi' && ed.gd.isConnected) plots.push(ed.gd);
+  for (const gd of plots){
+    const index = gd.data.findIndex(d => d.name === 'rho non-Morse');
+    if (index < 0) continue;
+    Plotly.restyle(gd, {x: [tr.x], y: [tr.y], text: [tr.text]}, [index]);
+    if (fit && EXCEPTIONAL.values.length){
+      // Include the old bounds (server traces may be binary encoded) and the
+      // newly found values. Preserve the aspect ratio of the opening view.
+      const old = (gd.layout.meta || {}).bounds;
+      const data = [tr, ...gd.data];
+      if (old) data.push({x: old.slice(0,2), y: old.slice(2,4)});
+      const bounds = localBounds({data});
+      const layout = Object.assign({}, gd.layout, {meta: {bounds}});
+      const ranges = equalScaleRanges({data, layout}, gd.clientWidth);
+      if (ranges) Plotly.relayout(gd, {'xaxis.range': ranges.xaxis.range,
+                                      'yaxis.range': ranges.yaxis.range});
+    }
+  }
+}
+function invalidateExceptional(){
+  EXCEPTIONAL.serial++; EXCEPTIONAL.key = null; EXCEPTIONAL.values = [];
+  paintExceptional();
+  if (LAST.pi) LAST.pi.note.textContent = 'Recompute rho to locate its non-Morse fibres.';
+}
+async function refreshExceptional(){
+  if (!LAST.pi) return;
+  const body = spec(true);
+  if (LAST.pi.geometry !== piGeometry(body)){
+    LAST.pi.note.textContent = 'Recompute pi, then rho, to locate the non-Morse fibres.';
+    return;
+  }
+  const key = JSON.stringify([piGeometry(body), body.rho]);
+  if (EXCEPTIONAL.key === key) return;
+  invalidateExceptional(); EXCEPTIONAL.key = key;
+  const serial = EXCEPTIONAL.serial;
+  LAST.pi.note.textContent = 'Locating rho non-Morse fibres…';
+  try {
+    const r = await (await api('/api/exceptional', {method: 'POST',
+      headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)})).json();
+    if (serial !== EXCEPTIONAL.serial) return;
+    if (r.status === 'complete'){
+      EXCEPTIONAL.values = r.values;
+      paintExceptional(true);
+      LAST.pi.note.textContent = `${r.values.length} rho non-Morse values on smooth pi fibres (orange x markers). `
+        + 'This does not check infinity or distinct critical points sharing a value.';
+    } else LAST.pi.note.textContent = 'Exceptional values not determined: ' + (r.message || r.error || r.status);
+  } catch (e){
+    if (serial === EXCEPTIONAL.serial)
+      LAST.pi.note.textContent = 'Exceptional values not determined: ' + e.message;
+  }
+}
+for (const id of ['domain', 'params', 'pi', 'pisolve', 'piorigin', 'rho', 'rhosolve', 'rhoorigin'])
+  $(id).addEventListener('input', invalidateExceptional);
 
 $('fpi').addEventListener('submit', async ev => {
   ev.preventDefault();
@@ -674,6 +761,7 @@ $('fpi').addEventListener('submit', async ev => {
 
 $('frho').addEventListener('submit', async ev => {
   ev.preventDefault();
+  refreshExceptional();
   $('brho').disabled = true; $('rhobusy').classList.remove('hidden');
   $('rhoout').innerHTML = ''; $('matchout').innerHTML = '';
   clearExtras();
@@ -701,6 +789,7 @@ $('fmatch').addEventListener('submit', async ev => {
     const r = await post(body);
     if (r.pi && r.pi.error) { showError($('matchout'), r.pi.error); return; }
     if (r.rho && r.rho.error) { showError($('matchout'), r.rho.error); return; }
+    refreshExceptional();
     renderMatching(r);
   } catch (e) { showError($('matchout'), e.message); }
   finally { $('bmatch').disabled = false; $('matchbusy').classList.add('hidden'); }
@@ -753,8 +842,8 @@ function roundable(ed, i){
   return i > 0 && i < ed.wp.length - 1;
 }
 
-function editorTraces(wp, marks, origin){
-  return [
+function editorTraces(wp, marks, origin, level){
+  const traces = [
     {x: marks.map(m => m[0]), y: marks.map(m => m[1]), mode: 'markers+text',
      text: marks.map((_, i) => String(i)), textposition: 'top right',
      marker: {size: 9, color: '#d62728'}, name: 'critical values',
@@ -768,6 +857,8 @@ function editorTraces(wp, marks, origin){
      marker: cornerStyle(wp.length, -1, i => i === 0 || i === wp.length - 1),
      name: 'corners', hovertemplate: '%{x:.4f} %{y:+.4f}i<extra></extra>'},
   ];
+  if (level === 'pi') traces.push(exceptionalTrace(EXCEPTIONAL.values));
+  return traces;
 }
 
 // The ends of a vanishing path are the reference fibre and the critical value;
@@ -993,7 +1084,7 @@ function addPicker(host, v, marks, origin, level, opts){
   const wp = defaultWaypoints(v, marks, origin);
   const gd = $(`ed-${key}`);
   const edFig = withOpeningView(
-    {data: editorTraces(wp, marks, origin),
+    {data: editorTraces(wp, marks, origin, level),
      layout: Object.assign({meta: {equalScale: true}}, EDITOR_LAYOUT)}, gd);
   Plotly.newPlot(gd, edFig.data, edFig.layout,
                  PLOT_CONFIG);
